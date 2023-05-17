@@ -3,6 +3,40 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const createJWT = require("../utils/auth");
 
+exports.emailInUse = (req, res, next) => {
+    let { email } = req.body;
+
+    User.findOne({ email: email })
+        .then(user => {
+            if (user) {
+                res.status(200).json({ inUse: true });
+            } else {
+                res.status(200).json({ inUse: false });
+            }
+        }).catch(err => {
+            res.status(500).json({
+                errors: [{ error: 'Error checking for emailInUse' }]
+            });
+        })
+}
+
+exports.displayNameInUse = (req, res, next) => {
+    let { displayName } = req.body;
+
+    User.findOne({ displayName: displayName })
+        .then(user => {
+            if (user) {
+                res.status(200).json({ inUse: true });
+            } else {
+                res.status(200).json({ inUse: false });
+            }
+        }).catch(err => {
+            res.status(500).json({
+                errors: [{ error: 'Error checking for emailInUse' }]
+            });
+        })
+}
+
 exports.signup = (req, res, next) => {
     let { displayName, email, password } = req.body;
 
