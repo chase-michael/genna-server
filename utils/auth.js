@@ -3,11 +3,8 @@ const jwt = require('jsonwebtoken');
 exports.createJWT = (email, userId, duration) => {
    const payload = {
       email,
-      userId,
-      duration
+      userId
    };
 
-   return jwt.sign(payload, process.env.TOKEN_SECRET, {
-     expiresIn: duration,
-   });
+   return jwt.sign(payload, process.env.TOKEN_SECRET);
 };
