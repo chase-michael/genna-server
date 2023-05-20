@@ -1,7 +1,7 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const createJWT = require("../utils/auth");
+const { getJWT } = require("../utils/auth");
 
 exports.emailInUse = (req, res, next) => {
     let { email } = req.body;
@@ -58,9 +58,13 @@ exports.signup = (req, res, next) => {
 
                         user.save()
                             .then(response => {
+                                let authToken = getJWT(
+                                    user._id,
+                                );
+
                                 res.status(200).json({
                                     success: true,
-                                    result: response
+                                    authToken: authToken,
                                 })
                             })
                             .catch(err => {
@@ -85,31 +89,23 @@ exports.signin = (req, res) => {
         .then(user => {
             if (!user) {
                 return res.status(404).json({
-                    errors: [{ user: "not found" }],
+                    errors: [{ email: 'No existing account with this email' }],
                 });
             } else {
                 bcrypt.compare(password, user.password)
                     .then(isMatch => {
                         if (!isMatch) {
-                            return res.status(400).json({ errors: [{ password: "incorrect" }] });
+                            return res.status(400).json({ errors: [{ password: 'Incorrect password' }] });
                         }
 
-                        let access_token = createJWT(
-                            user.email,
+                        let authToken = getJWT(
                             user._id,
                         );
 
-                        jwt.verify(access_token, process.env.TOKEN_SECRET, (err, decoded) => {
-                            if (err) {
-                                res.status(500).json({ errors: err });
-                            }
-                            if (decoded) {
-                                return res.status(200).json({
-                                    success: true,
-                                    token: access_token,
-                                    message: user
-                                });
-                            }
+                        return res.status(200).json({
+                            success: true,
+                            authToken: authToken,
+                            message: user
                         });
                     }).catch(err => {
                         res.status(500).json({ errors: err });

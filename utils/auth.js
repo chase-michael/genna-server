@@ -1,10 +1,12 @@
 const jwt = require('jsonwebtoken');
 
-exports.createJWT = (email, userId, duration) => {
-   const payload = {
-      email,
-      userId
-   };
-
-   return jwt.sign(payload, process.env.TOKEN_SECRET);
+exports.getJWT = (userId) => {
+   try {
+      const payload = {
+         userId: userId
+      };
+      return jwt.sign(payload, process.env.TOKEN_SECRET);
+   } catch (err) {
+      console.error('Error in createJWT:', err);
+   }
 };
