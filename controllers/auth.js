@@ -1,7 +1,11 @@
 const User = require('../models/User');
-const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { getJWT } = require("../utils/auth");
+const { getJWT } = require('../utils/auth');
+const { uploadProfileImage } = require('../utils/uploadToCloudinary');
+const fs = require('fs');
+const path = require('path');
+
+// Need to refactor this code and have better error handling...
 
 exports.emailInUse = (req, res, next) => {
     let { email } = req.body;
@@ -37,18 +41,23 @@ exports.displayNameInUse = (req, res, next) => {
         })
 }
 
-exports.signup = (req, res, next) => {
+exports.createAccount = (req, res, next) => {
     let { displayName, email, password } = req.body;
+    let profileImage = req.file.path;
 
     User.findOne({ email: email })
-        .then(user => {
+        .then(async user => {
             if (user) {
                 return res.status(422).json({ errors: [{ user: "email already exists" }] });
             } else {
+                const result = await uploadProfileImage(profileImage);
+                fs.unlinkSync(profileImage);
+
                 const user = new User({
                     displayName: displayName,
                     email: email,
                     password: password,
+                    profileImage: result.url
                 });
 
                 bcrypt.genSalt(10, function (err, salt) {

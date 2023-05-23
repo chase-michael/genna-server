@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+const { Schema } = mongoose;
 
 let userSchema = new Schema({
     displayName: {
@@ -11,6 +11,10 @@ let userSchema = new Schema({
         required: true
     },
     password: {
+        type: String,
+        required: true
+    },
+    profileImage: {
         type: String,
         required: true
     }
