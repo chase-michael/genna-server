@@ -2,12 +2,12 @@ const express = require('express');
 const router = express.Router();
 const multer  = require('multer');
 const upload = multer({ dest: 'uploads/' });
+const controllers = require('../controllers/auth');
 
-const { createAccount, signin, emailInUse, displayNameInUse } = require('../controllers/auth');
-
-router.post('/createAccount', upload.single('profileImage'), createAccount);
-router.post('/signin', signin);
-router.post('/emailInUse', emailInUse);
-router.post('/displayNameInUse', displayNameInUse);
+router.post('/createAccount', upload.single('profileImage'), controllers.createAccount);
+router.post('/signin', controllers.signin);
+router.get('/emailInUse', controllers.emailInUse);
+router.get('/displayNameInUse', controllers.displayNameInUse);
+router.post('/validateAuthToken', controllers.validateAuthToken)
 
 module.exports = router;

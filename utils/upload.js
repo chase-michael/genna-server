@@ -4,7 +4,6 @@ cloudinary.config({
   });
 
 exports.uploadProfileImage = async (img) => {
-    console.log('In uploadProfileImage');
     try {
         const result = await cloudinary.uploader.upload(img, {
             folder: 'ProfileImage',
