@@ -17,6 +17,14 @@ let userSchema = new Schema({
     profileImage: {
         type: String,
         required: true
+    },
+    slug: {
+        type: String,
+        required: true
+    },
+    bio: {
+        type: String,
+        required: true
     }
 }, {
     timestamps: true,
