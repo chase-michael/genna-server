@@ -1,16 +1,34 @@
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const { getJWT } = require('../utils/auth');
-const { uploadProfileImage } = require('../utils/uploadToCloudinary');
+const { uploadProfileImage } = require('../utils/upload');
 const fs = require('fs');
 const path = require('path');
+const jwt = require('jsonwebtoken')
+var crypto = require("crypto");
 
-// Need to refactor this code and have better error handling...
+exports.emailInUse = (req, res) => {
+    let { email } = req.query;
 
-exports.emailInUse = (req, res, next) => {
-    let { email } = req.body;
+  User.findOne({ email: email })
+    .then((user) => {
+      if (user) {
+        res.status(200).json({ inUse: true });
+      } else {
+        res.status(200).json({ inUse: false });
+      }
+    })
+    .catch((err) => {
+      res.status(500).json({
+        errors: [{ error: "Error checking for emailInUse" }],
+      });
+    });
+};
 
-    User.findOne({ email: email })
+exports.displayNameInUse = (req, res) => {
+    let { displayName } = req.query;
+
+    User.findOne({ 'displayName': displayName })
         .then(user => {
             if (user) {
                 res.status(200).json({ inUse: true });
@@ -24,24 +42,7 @@ exports.emailInUse = (req, res, next) => {
         })
 }
 
-exports.displayNameInUse = (req, res, next) => {
-    let { displayName } = req.body;
-
-    User.findOne({ displayName: displayName })
-        .then(user => {
-            if (user) {
-                res.status(200).json({ inUse: true });
-            } else {
-                res.status(200).json({ inUse: false });
-            }
-        }).catch(err => {
-            res.status(500).json({
-                errors: [{ error: 'Error checking for emailInUse' }]
-            });
-        })
-}
-
-exports.createAccount = (req, res, next) => {
+exports.createAccount = (req, res) => {
     let { displayName, email, password } = req.body;
     let profileImage = req.file.path;
 
@@ -53,74 +54,91 @@ exports.createAccount = (req, res, next) => {
                 const result = await uploadProfileImage(profileImage);
                 fs.unlinkSync(profileImage);
 
+                const id = crypto.randomBytes(3).toString('hex');
+
                 const user = new User({
                     displayName: displayName,
                     email: email,
                     password: password,
-                    profileImage: result.url
+                    profileImage: result.url,
+                    slug: id,
+                    bio: ''
                 });
 
-                bcrypt.genSalt(10, function (err, salt) {
-                    bcrypt.hash(password, salt, function (err, hash) {
-                        if (err) throw err;
-                        user.password = hash;
+        bcrypt.genSalt(10, function (err, salt) {
+          bcrypt.hash(password, salt, function (err, hash) {
+            if (err) throw err;
+            user.password = hash;
 
-                        user.save()
-                            .then(response => {
-                                let authToken = getJWT(
-                                    user._id,
-                                );
+            user
+              .save()
+              .then((response) => {
+                let authToken = getJWT(user._id);
 
-                                res.status(200).json({
-                                    success: true,
-                                    authToken: authToken,
-                                })
-                            })
-                            .catch(err => {
-                                res.status(500).json({
-                                    errors: [{ error: err }]
-                                });
-                            });
-                    });
+                res.status(200).json({
+                  success: true,
+                  authToken: authToken,
                 });
-            }
-        }).catch(err => {
-            res.status(500).json({
-                errors: [{ error: 'Something went wrong' }]
-            });
-        })
-}
+              })
+              .catch((err) => {
+                res.status(500).json({
+                  errors: [{ error: err }],
+                });
+              });
+          });
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).json({
+        errors: [{ error: "Something went wrong" }],
+      });
+    });
+};
 
 exports.signin = (req, res) => {
-    let { email, password } = req.body;
+  let { email, password } = req.body;
 
-    User.findOne({ email: email })
-        .then(user => {
-            if (!user) {
-                return res.status(404).json({
-                    errors: [{ email: 'No existing account with this email' }],
-                });
-            } else {
-                bcrypt.compare(password, user.password)
-                    .then(isMatch => {
-                        if (!isMatch) {
-                            return res.status(400).json({ errors: [{ password: 'Incorrect password' }] });
-                        }
-
-                        let authToken = getJWT(
-                            user._id,
-                        );
-
-                        return res.status(200).json({
-                            success: true,
-                            authToken: authToken,
-                            message: user
-                        });
-                    }).catch(err => {
-                        res.status(500).json({ errors: err });
-                    });
-            }
-        }).catch(err => {
-            res.status(500).json({ errors: err });
+  User.findOne({ email: email })
+    .then((user) => {
+      if (!user) {
+        return res.status(404).json({
+          errors: [{ email: "No existing account with this email" }],
         });
+      } else {
+        bcrypt
+          .compare(password, user.password)
+          .then((isMatch) => {
+            if (!isMatch) {
+              return res
+                .status(400)
+                .json({ errors: [{ password: "Incorrect password" }] });
+            }
+
+            let authToken = getJWT(user._id);
+
+            return res.status(200).json({
+              success: true,
+              authToken: authToken,
+              message: user,
+            });
+          })
+          .catch((err) => {
+            res.status(500).json({ errors: err });
+          });
+      }
+    })
+    .catch((err) => {
+      res.status(500).json({ errors: err });
+    });
+};
+
+exports.validateAuthToken = (req, res) => {
+    let { authToken } = req.body;
+    try {
+        jwt.verify(authToken, process.env.TOKEN_SECRET);
+        res.status(200).json({ isValid: true });
+    } catch (error) {
+        res.status(500).json({ isValid: false })
+    }
 }
