@@ -13,9 +13,26 @@ exports.uploadProfileImage = async (img) => {
         return result;
         
     } catch (error) {
-        console.log(error)
+        console.log(error);
         return res.status(500).json({
             errors: [{ error: 'Error in uploadImage' }]
+        });
+    }
+}
+
+exports.uploadWork = async (img) => {
+    try {
+        const result = await cloudinary.uploader.upload(img, {
+            folder: 'Work',
+            unique_filename: true
+        });
+
+        return result;
+    
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            errors: [{ error: 'Error in uploadWork'}]
         });
     }
 }

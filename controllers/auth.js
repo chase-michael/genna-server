@@ -3,7 +3,6 @@ const bcrypt = require('bcrypt');
 const { getJWT } = require('../utils/auth');
 const { uploadProfileImage } = require('../utils/upload');
 const fs = require('fs');
-const path = require('path');
 const jwt = require('jsonwebtoken')
 var crypto = require("crypto");
 
@@ -91,7 +90,7 @@ exports.createAccount = (req, res) => {
     })
     .catch((err) => {
       res.status(500).json({
-        errors: [{ error: "Something went wrong" }],
+        errors: [{ error: err }],
       });
     });
 };
@@ -141,4 +140,27 @@ exports.validateAuthToken = (req, res) => {
     } catch (error) {
         res.status(500).json({ isValid: false })
     }
+}
+
+exports.authMiddleware = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (token == null) return next("nulltoken")
+  try {
+      const decoded = jwt.verify(token, process.env.TOKEN_SECRET);
+      req.user = decoded;
+      next();
+  } catch (error) {
+      res.sendStatus(403);
+  }
+}
+
+
+exports.getProfileImage = async (req, res) => {
+  const user = await User.findById(req.user.userId);
+  if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+  }
+  res.status(200).json({ profileImage: user.profileImage });
+
 }

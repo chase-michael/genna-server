@@ -12,12 +12,16 @@ let workSchema = new Schema({
     },
     alt: {
         type: String,
-        required: false
+        required: true
     },
     artistId: {
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: true
+    },
+    workCollection: {
+        type: String,
+        required: false
     },
     url: {
         type: String,

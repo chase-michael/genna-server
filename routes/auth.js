@@ -8,6 +8,7 @@ router.post('/createAccount', upload.single('profileImage'), controllers.createA
 router.post('/signin', controllers.signin);
 router.get('/emailInUse', controllers.emailInUse);
 router.get('/displayNameInUse', controllers.displayNameInUse);
-router.post('/validateAuthToken', controllers.validateAuthToken)
+router.post('/validateAuthToken', controllers.validateAuthToken);
+router.get('/getProfileImage', controllers.authMiddleware, controllers.getProfileImage);
 
 module.exports = router;

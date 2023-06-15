@@ -69,7 +69,6 @@ const getArtistBySlug = (req, res) => {
 
 const getArtistById = (req, res) => {
     let { artistId } = req.query;
-    
     User.findOne({ '_id': artistId })
         .then((user) => {
             const artist = {
@@ -77,7 +76,6 @@ const getArtistById = (req, res) => {
                 bio: user.bio,
                 profileImage: user.profileImage
             }
-            console.log(artist);
             res.status(200).json(artist);
 
         }).catch(err => {
