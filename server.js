@@ -8,6 +8,7 @@ const authRoutes = require('./routes/auth');
 const searchRoutes = require('./routes/search');
 const fetchRoutes = require('./routes/fetch');
 const uploadRoutes = require('./routes/upload');
+const openaiRoutes = require('./routes/openai');
 
 const app = express();
 
@@ -21,6 +22,8 @@ app.use('/auth', authRoutes);
 app.use('/search', searchRoutes);
 app.use('/fetch', fetchRoutes); 
 app.use('/upload', uploadRoutes);
+app.use('/openai', openaiRoutes)
+
 
 
 app.listen(process.env.PORT || 3005, () => {
