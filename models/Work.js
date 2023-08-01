@@ -6,10 +6,6 @@ let workSchema = new Schema({
         type: String,
         required: true
     },
-    description: {
-        type: String,
-        required: true
-    },
     alt: {
         type: String,
         required: true
@@ -18,10 +14,6 @@ let workSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: true
-    },
-    workCollection: {
-        type: String,
-        required: false
     },
     url: {
         type: String,

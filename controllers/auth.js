@@ -61,7 +61,7 @@ exports.createAccount = (req, res) => {
                     password: password,
                     profileImage: result.url,
                     slug: id,
-                    bio: ''
+                    bio: `${displayName} hasn't written a bio yet.`
                 });
 
         bcrypt.genSalt(10, function (err, salt) {
@@ -72,7 +72,7 @@ exports.createAccount = (req, res) => {
             user
               .save()
               .then((response) => {
-                let authToken = getJWT(user._id);
+                let authToken = getJWT(user._id, user.displayName, user.email, user.profileImage, user.bio, user.slug);
 
                 res.status(200).json({
                   success: true,
@@ -114,7 +114,7 @@ exports.signin = (req, res) => {
                 .json({ errors: [{ password: "Incorrect password" }] });
             }
 
-            let authToken = getJWT(user._id);
+            let authToken = getJWT(user._id, user.displayName, user.email, user.profileImage, user.bio, user.slug);
 
             return res.status(200).json({
               success: true,
@@ -135,10 +135,10 @@ exports.signin = (req, res) => {
 exports.validateAuthToken = (req, res) => {
     let { authToken } = req.body;
     try {
-        jwt.verify(authToken, process.env.TOKEN_SECRET);
-        res.status(200).json({ isValid: true });
+        const decoded = jwt.verify(authToken, process.env.TOKEN_SECRET);
+        res.status(200).json(decoded);
     } catch (error) {
-        res.status(500).json({ isValid: false })
+        res.status(500).json('Error in validateAuthToken')
     }
 }
 
@@ -154,7 +154,6 @@ exports.authMiddleware = (req, res, next) => {
       res.sendStatus(403);
   }
 }
-
 
 exports.getProfileImage = async (req, res) => {
   const user = await User.findById(req.user.userId);

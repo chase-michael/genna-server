@@ -54,9 +54,10 @@ const getArtistBySlug = (req, res) => {
     User.findOne({ 'slug': slug })
         .then((user) => {
             const artist = {
+                id: user._id,
                 displayName: user.displayName,
                 bio: user.bio,
-                profileImage: user.profileImage
+                profileImage: user.profileImage,
             }
             res.status(200).json(artist);
 
@@ -74,7 +75,8 @@ const getArtistById = (req, res) => {
             const artist = {
                 displayName: user.displayName,
                 bio: user.bio,
-                profileImage: user.profileImage
+                profileImage: user.profileImage,
+                slug: user.slug
             }
             res.status(200).json(artist);
 

@@ -19,10 +19,8 @@ exports.saveWork = async (req, res) => {
 
     const work = new Work({
       title: title,
-      description: description,
       alt: alt,
       artistId: artistId,
-      workCollection: collection,
       url: result.url
     });
 

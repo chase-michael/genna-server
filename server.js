@@ -9,6 +9,7 @@ const searchRoutes = require('./routes/search');
 const fetchRoutes = require('./routes/fetch');
 const uploadRoutes = require('./routes/upload');
 const openaiRoutes = require('./routes/openai');
+const utilRoutes = require('./routes/util');
 
 const app = express();
 
@@ -23,6 +24,8 @@ app.use('/search', searchRoutes);
 app.use('/fetch', fetchRoutes); 
 app.use('/upload', uploadRoutes);
 app.use('/openai', openaiRoutes)
+app.use('/util', utilRoutes);
+
 
 
 
