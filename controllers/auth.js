@@ -24,6 +24,24 @@ exports.emailInUse = (req, res) => {
     });
 };
 
+exports.slugInUse = (req, res) => {
+  let { slug } = req.query;
+
+User.findOne({ slug: slug })
+  .then((user) => {
+    if (user) {
+      res.status(200).json({ inUse: true });
+    } else {
+      res.status(200).json({ inUse: false });
+    }
+  })
+  .catch((err) => {
+    res.status(500).json({
+      errors: [{ error: "Error checking for slugInUse" }],
+    });
+  });
+};
+
 exports.displayNameInUse = (req, res) => {
     let { displayName } = req.query;
 
@@ -162,4 +180,31 @@ exports.getProfileImage = async (req, res) => {
   }
   res.status(200).json({ profileImage: user.profileImage });
 
+}
+
+exports.updateProfileInformation = async (req, res) => {
+  const { authToken, displayName, bio, slug } = req.body;
+
+  try {
+    const payload = jwt.verify(authToken, process.env.TOKEN_SECRET);
+
+    const filter = { _id: payload._id};
+    const update = { 
+      displayName,
+      bio,
+      slug
+     };
+
+    const doc = await User.findOneAndUpdate(filter, update, {
+      new: true
+    });
+
+    let newAuthToken = getJWT(doc._id, doc.displayName, doc.email, doc.profileImage, doc.bio, doc.slug);
+    
+    res.status(200).json({ newAuthToken, message: "Information successfully updated!" });
+
+  } catch (error) {
+    res.status(500).json({ error });
+    console.log(error);
+  }
 }
