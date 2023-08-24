@@ -43,11 +43,13 @@ exports.saveFinalWork = async (req, res) => {
 
   try {
 
+    const result = await uploadWork(url);
+
     const work = new Work({
       title: title,
       alt: title,
       artistId: artistId,
-      url: url
+      url: result.url
     });
 
     const savedWork = await work.save();
